@@ -1,0 +1,16 @@
+#SystemStatus {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background-color: #fff;
+  color: #000;
+}
+#SystemStatus.OK {
+  background-color: #50db34;
+  color: #000;
+}
+#SystemStatus.ERR {
+  background-color: #ff801e;
+  color: #000;
+}

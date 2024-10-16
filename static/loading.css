@@ -1,0 +1,22 @@
+#loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 8px;
+  background-color: #3498dbee;
+  transition: width 0.3s ease-out;
+}
+#loading-bar.enable {
+  /* animation: loading 60s linear infinite; */
+  animation: loading 60s cubic-bezier(0.2, 0.35, 0.66, 0.5) infinite;
+}
+
+@keyframes loading {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}

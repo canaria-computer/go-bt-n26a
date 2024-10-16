@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{- .Title -}}</title>
+  <link rel="stylesheet" nonce="{{ .Nonce }}" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css" />
+  <link rel="stylesheet" nonce="{{ .Nonce }}" href="/static/status.css" />
+  <link rel="stylesheet" nonce="{{ .Nonce }}" href="/static/loading.css" />
+  <script defer src="/static/time.js" nonce="{{ .Nonce }}"></script>
+  <script defer src="/static/wakelock.js" nonce="{{ .Nonce }}"></script>
+  <script defer src="/static/event.js" nonce="{{ .Nonce }}"></script>
+</head>
+
+<body>
+  <div id="loading-bar"></div>
+  <div id="SystemStatus">
+    <span>システム状態</span>:<span id="SystemStatusText">Sync Waiting...</span>
+  </div>
+  <h1>Bluetooth 人数カウント</h1>
+  <h2>現在時刻</h2>
+  <p id="time"></p>
+  <hr />
+  <h2>ビルド情報</h2>
+  <p>{{ .Message }}</p>
+  <hr />
+  <h2>スキャン結果</h2>
+  <h3>受信結果最新</h3>
+  <h4>台数</h4>
+  <p>端末数:<span id="deviceCount"></span></p>
+  <pre><code id="currentScanResultOutput">Sync Waiting...</code></pre>
+  <h3>過去の結果</h3>
+  <div id="resultDetails"></div>
+  <template id="resultDetailsTemplate">
+    <details>
+      <summary>#1</summary>
+      <pre><code></code></pre>
+      <data-count></data-count>
+    </details>
+  </template>
+  <hr />
+  <h2>Log</h2>
+  <pre id="log_output"><code></code></pre>
+</body>
+
+</html>
