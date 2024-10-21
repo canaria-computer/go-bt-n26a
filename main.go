@@ -23,7 +23,7 @@ import (
 
 // アプリケーションの設定定数
 const (
-	buildMessage = "version 1.0 n26a-bt"
+	buildMessage = "version 1.1 n26a-bt"
 	port         = "2829"
 	appName      = "go-bt-n26a"
 	authURL      = "https://n26a_backend.mirai-th-kakenn.workers.dev/auth/login"
@@ -55,10 +55,19 @@ func init() {
 	flag.Parse()
 
 	if locateID == -1 {
-		locateID, err := strconv.Atoi(os.Getenv("N26A_BT_LOCATE_ID"))
-		if locateID == -1 || err != nil {
+		envID, err := strconv.Atoi(os.Getenv("N26A_BT_LOCATE_ID"))
+		if err != nil || envID == -1 {
 			fmt.Print("ロケーションIDを入力してください: ")
-			fmt.Scanf("%d\n", &locateID)
+			var input string
+			fmt.Scanln(&input)
+			inputID, err := strconv.Atoi(input)
+			if err != nil {
+				fmt.Println("無効な入力です。デフォルト値の-1を使用します。")
+			} else {
+				locateID = inputID
+			}
+		} else {
+			locateID = envID
 		}
 	}
 }
@@ -87,9 +96,8 @@ func credentialScan() error {
 		fmt.Println("クレデンシャルを再利用しました")
 		credential = savedToken
 		return nil
-	} else {
-		fmt.Println("トークンの有効期限が切れています")
 	}
+	fmt.Println("トークンの有効期限が切れています")
 
 	userid, password := getCredentialsFromEnv()
 
@@ -231,6 +239,7 @@ func saveToDir(dir string, data []byte) error {
 }
 
 func bluetoothScanRoutine() {
+	counter := 0
 	adapter := bluetooth.DefaultAdapter
 	if err := adapter.Enable(); err != nil {
 		fmt.Println("BLEスタックの有効化に失敗しました:", err)
@@ -246,10 +255,12 @@ func bluetoothScanRoutine() {
 		go stopScanAfterDuration(adapter, scanDuration, scanDone)
 
 		<-scanDone
-
-		if err := sendLog(devices); err != nil {
-			fmt.Println("ログの送信中にエラーが発生しました:", err)
+		if counter%5 == 0 {
+			if err := sendLog(devices); err != nil {
+				fmt.Println("ログの送信中にエラーが発生しました:", err)
+			}
 		}
+		counter++
 
 		// 常にデバイス情報をブロードキャスト
 		if err := broadcastDevices(devices); err != nil {
@@ -305,8 +316,9 @@ func sendLog(devices map[string]string) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+credential)
 
-	client := &http.Client{}
-
+	client := &http.Client{
+		Timeout: 1 * time.Minute,
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("ログリクエストの送信に失敗しました:%w", err)
@@ -318,9 +330,11 @@ func sendLog(devices map[string]string) error {
 		return fmt.Errorf("ログの送信に失敗しました:%w", err)
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode/100 != 2 {
 		return fmt.Errorf("ログの送信に失敗しました。ステータスコード:%d 、レスポンス:%s", resp.StatusCode, string(body))
 	}
+
+	fmt.Printf("[%d]ログ送信成功\n", resp.StatusCode)
 
 	return nil
 }
